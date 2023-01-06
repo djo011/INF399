@@ -12,9 +12,11 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
 import time
-import matplotlib.pyplot as plt
-os.chdir(r"C:\Users\danie\UiB\Master\Data_gen")
+os.chdir(r"C:\Users\danie\repos\INF399")
+
+os.chdir(r".\utils")
 from NeuralNetwork import MLP
+os.chdir(r"..\dataGeneration")
 from simdata_generation import CrausteModel
 
 class GeneExpressionData(Dataset):
@@ -125,8 +127,13 @@ if __name__ == "__main__":
                         help = 'Determine if data should be save or not')
     parser.add_argument('--epochs', type = int, default = 15,
                         help='The number of epochs to be used in training')
+    parser.add_argument('--hidden_layer_size', type = int, default = 8, 
+                        help='The number of nodes in each hidden layer')
+    parser.add_argument('--n_hidden_layers', type = int, default = 2,
+                        help='The number of hidden layers in MLP')
     
     #Parse arguments and store in variables
+    os.chdir(r"C:\Users\danie\repos\INF399")
     args = parser.parse_args()
     size = args.size_dataset
     noise_lvl = args.noise_level
