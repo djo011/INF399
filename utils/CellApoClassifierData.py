@@ -22,3 +22,27 @@ def lh_sampling(number_of_samples, n_species):
     drawn_samples = qmc.scale(lh_sample, l_bound, u_bound)
 
     return drawn_samples
+
+def test_lh_sampling():
+    n_samples = 10
+    n_species = 8
+    l_bound = [1.34e4, 1e4, 2.67e4, 0, 0, 0, 2.9e2, 0]
+    u_bound = [1.34e6, 1e6, 2.67e6, 1, 1, 1, 2.9e5, 1]
+    test_samples = lh_sampling(n_samples, n_species)
+    
+    assert test_samples.shape[0] == n_samples
+    assert test_samples.shape[1] == n_species
+
+    for i in range(0,len(test_samples[0])):
+        for j in range(0, len(test_samples[1])):
+            sample = test_samples[i][j]
+            if sample < l_bound[j]:
+                print("Sample was out of bounds! Lower than desired!")
+                return False
+            if sample > u_bound[j]:
+                print("Sample was out of bounds! Greater than desired!")
+                return False
+    print("All test passed!")
+    return True 
+
+test_lh_sampling()
