@@ -29,7 +29,7 @@ class BaseModel():
     def ode_model(self):
         return 0
     
-    def gen_data(self, noise_lvl, n_data_set, n_data_points, random_sampling = False):
+    def gen_data(self, noise_lvl, n_data_set, n_data_points, sampling):
         start_time = time.time()
         
         # Store Original solution to ODE Model
@@ -45,10 +45,18 @@ class BaseModel():
             temp_data = np.array(
                 [rng.normal(0, noise[i], base_data.shape[0]) for i in range(self.n_species)]) # dim = (n_species, time_points)
             temp_data = temp_data.transpose() + base_data # dim(time_points, n_species)
-            if random_sampling:    
+            if sampling.lower() == "random":    
                 t_idx = rng.choice(base_data.shape[0], n_data_points,replace=False) # dim = (n_data_points,)
-            else:
+            if sampling.lower() == "normal":
                 t_idx = np.linspace(0,base_data.shape[0]-1, n_data_points, dtype= np.int32)
+            
+            if sampling.lower() == "frequenttimeframe":
+                start_timeframe = 0
+                stop_timeframe = 150
+                samples_within = 50
+                t_idx1 = np.linspace(start_timeframe,stop_timeframe,samples_within, dtype = np.int32)
+                t_idx2 = np.linspace(stop_timeframe+50,base_data.shape[0]-1, n_data_points-samples_within, dtype = np.int32)
+                t_idx = np.concatenate((t_idx1,t_idx2))
                 
             temp_t = self.time_t[t_idx] # dim = (n_data_points)
             temp_data = temp_data[t_idx,:].transpose()
@@ -116,7 +124,7 @@ class CellApoModel(BaseModel):
             self.init_val = [1.34e5, 1e5, 2.67e5, 0, 0, 0, 2.9e3, 0]
             self.plot_title = " Expression in Cell Apotosis"
             
-        self.time_t = np.linspace(0,60**3,60**3)
+        self.time_t = np.linspace(start = 0,stop= 60**3,num = 60**3)
         self.t_scale = 1/3600
         self.x_scale = 1/1e5
         self.data_set = None
@@ -173,7 +181,7 @@ class CrausteModel(BaseModel):
     def __init__(self, init_val = [8090,0,0,0,1]):
         self.model_name = "Crauste Model"
         self.init_val = init_val
-        self.time_t = np.linspace(0,60,601)
+        self.time_t = np.linspace(0,60,600)
         self.t_scale = 1/1
         self.x_scale = 1/1
         self.data_set = None
@@ -215,8 +223,7 @@ class CrausteModel(BaseModel):
         dxdt = [dNdt, dEdt, dLdt, dMdt, dPdt]
         
         return dxdt
-
-
+#%%
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = 'Generate simulated dataset for given biological function')
     
@@ -256,5 +263,4 @@ if __name__ == "__main__":
         data_set[:int(args.n_data_set/2),:,:] = data_survival[:,:,:,:]
         data_set[int(args.n_data_set/2):,:,:] = data_death[:,:,:,:]
         np.random.shuffle(data_set)
-        np.save("cellapotosis_dataset.npy", data_set)
-        
+        np.save("cellapotosis_dataset.npy", data_set)     
